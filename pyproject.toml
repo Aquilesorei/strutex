@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "pyapu"
+version = "0.1.0"
+description = ""
+authors = ["aquiles <achillezongo07@gmail.com>","Justine <saloujustine01@gmail.com>" ,"Wendbenindo  <internetdg27@gmail.com>"]
+license = "GPL3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+google-genai = "^1.53.0"
+pypdf = "^6.4.0"
+pdfplumber = "^0.11.8"
+pandas = "^2.3.3"
+openpyxl = "^3.1.5"
+pydantic = "^2.12.5"
+openai = "^2.8.1"
+python-dotenv = "^1.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
