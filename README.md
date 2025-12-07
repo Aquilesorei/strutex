@@ -7,17 +7,17 @@
 
 ---
 
-## ✨ Features
+## Features
 
-- 🔌 **Pluggable Architecture** — Everything is extensible with sensible defaults
-- 🤖 **Multi-Provider LLM Support** — Gemini, OpenAI, Anthropic, Ollama, and custom endpoints
-- 📄 **Universal Document Support** — PDFs, images, Excel, and custom formats
-- 🎯 **Schema-Driven Extraction** — Define your output structure, get consistent JSON
-- 🔒 **Security First** — Built-in input sanitization and output validation
+- **Pluggable Architecture** — Everything is extensible with sensible defaults
+- **Multi-Provider LLM Support** — Gemini, OpenAI, Anthropic, Ollama, and custom endpoints
+- **Universal Document Support** — PDFs, images, Excel, and custom formats
+- **Schema-Driven Extraction** — Define your output structure, get consistent JSON
+- **Security First** — Built-in input sanitization and output validation
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -61,7 +61,7 @@ print(result["total"])           # 1250.00
 
 ---
 
-## 🔌 Plugin System
+## Plugin System
 
 **Everything in pyapu is pluggable.** Use defaults or register your own implementations:
 
@@ -94,7 +94,7 @@ class CurrencyNormalizer(Postprocessor):
 
 ---
 
-## 📦 Supported Formats
+## Supported Formats
 
 | Format | Extensions              | Method                              |
 | ------ | ----------------------- | ----------------------------------- |
@@ -105,20 +105,20 @@ class CurrencyNormalizer(Postprocessor):
 
 ---
 
-## 🛣️ Roadmap
+## Roadmap
 
 See [ROADMAP.md](ROADMAP.md) for the full development plan.
 
 **Current priorities:**
 
-- [x] Plugin registry system (v0.2.0) ✅
-- [x] Security plugin layer ✅
-- [x] Pydantic model support ✅
+- [x] Plugin registry system (v0.2.0)
+- [x] Security plugin layer
+- [x] Pydantic model support
 - [ ] Additional providers (OpenAI, Anthropic, Ollama)
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 ```bash
 # Serve locally (live reload)
@@ -133,7 +133,7 @@ poetry run mkdocs gh-deploy
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE) for details.
 
@@ -141,7 +141,7 @@ For commercial or proprietary use, please [contact me](mailto:your-email@example
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Priority areas:
 
