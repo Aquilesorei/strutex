@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the code
+      - uses: actions/checkout@v4
+
+      # 2. Set up Python 3.12
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Install Poetry
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      # 4. Install System Dependencies (OCR tools)
+      #    This is critical for your new OCR tests to pass on the server
+      - name: Install System Dependencies (Tesseract & Poppler)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr libtesseract-dev poppler-utils
+
+      # 5. Install Python Dependencies
+      - name: Install Dependencies
+        run: poetry install --no-interaction --all-extras
+
+      # 6. Run Tests
+      - name: Run Tests
+        run: poetry run pytest
+
+      # 7. Build Documentation (Ensure it compiles)
+      - name: Build Documentation
+        run: poetry run mkdocs build
