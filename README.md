@@ -137,7 +137,7 @@ poetry run mkdocs gh-deploy
 
 This project is licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE) for details.
 
-For commercial or proprietary use, please [contact me](mailto:your-email@example.com) for a separate license.
+For commercial or proprietary use, please [contact me](mailto:achillezongo07@gmail.com) for a separate license.
 
 ---
 
