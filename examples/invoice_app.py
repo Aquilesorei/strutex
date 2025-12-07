@@ -18,6 +18,8 @@ import json
 from datetime import datetime
 from typing import List, Optional
 
+from dotenv import load_dotenv
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # =============================================================================
@@ -25,8 +27,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 # =============================================================================
 
 from pydantic import BaseModel, Field, field_validator
-
-
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 class LineItem(BaseModel):
     """Individual line item from an invoice."""
     description: str = Field(description="Item description")
@@ -540,42 +542,35 @@ def demo_without_api():
 
 def main():
     """Main entry point."""
-    import argparse
-    
-    parser = argparse.ArgumentParser(description="Invoice Processor App")
-    parser.add_argument("file", nargs="?", help="Invoice PDF to process")
-    parser.add_argument("--demo", action="store_true", help="Run demo mode")
-    parser.add_argument("--language", choices=["en", "de"], default="en")
-    parser.add_argument("--strict", action="store_true", help="Enable strict security")
-    
-    args = parser.parse_args()
-    
-    if args.demo or not args.file:
-        demo_without_api()
-        return
-    
-    # Process a real file
-    app = InvoiceProcessorApp(
-        language=args.language,
-        strict_security=args.strict
-    )
-    
-    result = app.process(args.file)
-    
-    if result["success"]:
-        print(f"✅ Invoice processed successfully")
-        print(f"   Number: {result['invoice'].invoice_number}")
-        print(f"   Total: {result['invoice'].currency} {result['invoice'].total}")
-        print(f"   Items: {len(result['invoice'].items)}")
+    # If a file is provided, process it with Gemini
+    if len(sys.argv) > 1:
+        file_path = sys.argv[1]
         
-        if result["validation"]["issues"]:
-            print(f"\n⚠️ Warnings:")
-            for issue in result["validation"]["issues"]:
-                print(f"   - {issue}")
+        app = InvoiceProcessorApp(
+            language="en",
+            strict_security=False,
+            api_key=GEMINI_API_KEY
+        )
+        
+        result = app.process(file_path)
+        
+        if result["success"]:
+            print(f"Invoice processed successfully")
+            print(f"   Number: {result['invoice'].invoice_number}")
+            print(f"   Total: {result['invoice'].currency} {result['invoice'].total}")
+            print(f"   Items: {len(result['invoice'].items)}")
+            
+            if result["validation"]["issues"]:
+                print(f"\nWarnings:")
+                for issue in result["validation"]["issues"]:
+                    print(f"   - {issue}")
+        else:
+            print(f"Error: {result['error']}")
+        
+        print(f"\nProcessing time: {result['processing_time']:.2f}s")
     else:
-        print(f"❌ Error: {result['error']}")
-    
-    print(f"\n⏱️ Processing time: {result['processing_time']:.2f}s")
+        # No file provided, run demo
+        demo_without_api()
 
 
 if __name__ == "__main__":
