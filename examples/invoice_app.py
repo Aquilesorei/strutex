@@ -331,7 +331,8 @@ class PIIFilter(SecurityPlugin):
 
 def create_security_chain(strict: bool = False) -> SecurityChain:
     """Create the security chain for invoice processing."""
-    plugins = [
+
+    plugins : List[SecurityPlugin]= [
         InputSanitizer(
             collapse_whitespace=True,
             normalize_unicode=True,

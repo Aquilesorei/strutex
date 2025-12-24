@@ -37,6 +37,8 @@ from .base import (
 )
 from .protocol import (
     PLUGIN_API_VERSION,
+    PluginType,
+    PLUGIN_PROTOCOLS,
     ProviderProtocol,
     ExtractorProtocol,
     ValidatorProtocol,
@@ -70,6 +72,8 @@ __all__ = [
     
     # Protocols
     "PLUGIN_API_VERSION",
+    "PluginType",
+    "PLUGIN_PROTOCOLS",
     "ProviderProtocol",
     "ExtractorProtocol",
     "ValidatorProtocol",

@@ -11,10 +11,30 @@ Example:
     True
 """
 
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from enum import StrEnum
+from typing import Any, Dict, List, Optional, Protocol, TYPE_CHECKING, runtime_checkable
 
 # Plugin API version for compatibility checks
 PLUGIN_API_VERSION = "1.0"
+
+
+class PluginType(StrEnum):
+    """Enumeration of supported plugin types.
+    
+    Used for type-safe plugin type references throughout the codebase,
+    plugin registry lookups, entry point group names, and CLI commands.
+    
+    Example:
+        >>> PluginType.PROVIDER
+        'provider'
+        >>> PluginType.PROVIDER == "provider"
+        True
+    """
+    PROVIDER = "provider"
+    EXTRACTOR = "extractor"
+    VALIDATOR = "validator"
+    POSTPROCESSOR = "postprocessor"
+    SECURITY = "security"
 
 
 @runtime_checkable
@@ -192,3 +212,13 @@ def validate_plugin_protocol(plugin: Any, expected_protocol: type) -> bool:
         True if plugin implements the protocol
     """
     return isinstance(plugin, expected_protocol)
+
+
+# Mapping of plugin types to their protocol classes
+PLUGIN_PROTOCOLS: Dict[PluginType, type] = {
+    PluginType.PROVIDER: ProviderProtocol,
+    PluginType.EXTRACTOR: ExtractorProtocol,
+    PluginType.VALIDATOR: ValidatorProtocol,
+    PluginType.POSTPROCESSOR: PostprocessorProtocol,
+    PluginType.SECURITY: SecurityPluginProtocol,
+}
