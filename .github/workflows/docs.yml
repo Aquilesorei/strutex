@@ -57,10 +57,13 @@ jobs:
 
           echo "Deploying version: $VERSION"
 
+          # Fetch gh-pages if it exists
+          git fetch origin gh-pages --depth=1 || true
+
           # Deploy with mike
           if [[ "$VERSION" == "dev" ]]; then
-            poetry run mike deploy dev --push
+            poetry run mike deploy dev --push --ignore-remote-status
           else
-            poetry run mike deploy "$VERSION" latest --update-aliases --push
-            poetry run mike set-default latest --push
+            poetry run mike deploy "$VERSION" latest --update-aliases --push --ignore-remote-status
+            poetry run mike set-default latest --push --ignore-remote-status
           fi
