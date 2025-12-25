@@ -63,6 +63,7 @@ jobs:
           # Deploy with mike
           if [[ "$VERSION" == "dev" ]]; then
             poetry run mike deploy dev --push --ignore-remote-status
+            poetry run mike set-default dev --push --ignore-remote-status
           else
             poetry run mike deploy "$VERSION" latest --update-aliases --push --ignore-remote-status
             poetry run mike set-default latest --push --ignore-remote-status
