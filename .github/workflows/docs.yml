@@ -45,10 +45,10 @@ jobs:
 
       - name: Deploy with mike
         run: |
-          # Get version from tag or input
+          # 1. Setup Version
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${{ github.ref_name }}"
-            VERSION="${VERSION#v}"  # Remove 'v' prefix
+            VERSION="${VERSION#v}"
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             VERSION="${{ github.event.inputs.version }}"
           else
@@ -56,18 +56,20 @@ jobs:
           fi
           echo "Deploying version: $VERSION"
 
-          # Configure user again just in case
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # 2. Configure Git User
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Fetch gh-pages to ensure we know it exists
-          git fetch origin gh-pages --depth=1 || true
+          # 3. Fetch remote gh-pages and force-sync local branch
+          # This ensures we are strictly adding to the latest remote version
+          git fetch origin gh-pages || true
+          git branch -f gh-pages origin/gh-pages || true
 
-          # Deploy using --rebase to handle remote conflicts
+          # 4. Deploy using --push (Standard mode)
           if [[ "$VERSION" == "dev" ]]; then
-            poetry run mike deploy dev --push --rebase
-            poetry run mike set-default dev --push --rebase
+            poetry run mike deploy dev --push
+            poetry run mike set-default dev --push
           else
-            poetry run mike deploy "$VERSION" latest --update-aliases --push --rebase
-            poetry run mike set-default latest --push --rebase
+            poetry run mike deploy "$VERSION" latest --update-aliases --push
+            poetry run mike set-default latest --push
           fi
