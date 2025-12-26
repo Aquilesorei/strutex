@@ -27,6 +27,8 @@
 
 ### Installation
 
+View on PyPI: [https://pypi.org/project/strutex/](https://pypi.org/project/strutex/)
+
 ```bash
 # Core only
 pip install strutex
