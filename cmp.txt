@@ -1,0 +1,50 @@
+
+--- Page 1 (digital) ---
+    Musterfirma GmbH                                                          
+    Musterstraße 12                                                           
+    12345 Musterhausen                                                        
+    VAT-ID: DE123456789                                                       
+    IBAN: DE89 3704 0044 0532 0130 00                                         
+    BIC: COBADEFFXXX                                                          
+    Managing Director: Markus Muster                                          
+    E-mail: orders@musterfirma.de                                             
+    Phone: +49 1234 56789                                                     
+                                                                                    
+    TechVision AG                                                             
+    Hauptstraße 10                                                            
+    54321 Beispielstadt                                                       
+                                                                                    
+    Musterhausen, May 5, 2025                                                 
+                                                                                    
+                                                                                    
+    Order Confirmation – Your Order of May 3, 2025                            
+                                                                                    
+    Dear Sir or Madam,                                                        
+                                                                                    
+    Thank you for your order dated May 3, 2025. Our quotation no. 2025-001 includes the following
+    items at a total price of € 1,338.75:                                     
+                                                                                    
+    Pos.    Description  Qty Unit Price Total Price                           
+                                                                                    
+    1   Fire Alarm Control Panel 1 € 850.00 € 850.00                          
+    2   Smoke Detector Set 5 € 25.00 € 125.00                                 
+    3   Commissioning Service 1 € 150.00 € 150.00                             
+                                                                                    
+    Subtotal: € 1,125.00                                                      
+                                                                                    
+    Plus VAT 19%: € 213.75                                                    
+                                                                                    
+    The agreed delivery and installation appointment is May 12, 2025 at 09:00.
+                                                                                    
+    If you have any questions, please contact us at +49 1234 56789.           
+                                                                                    
+    Yours sincerely,                                                          
+                                                                                    
+    MUSTERFIRMA GmbH                                                          
+    Markus Muster                                                             
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
+                                                                                    
