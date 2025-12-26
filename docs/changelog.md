@@ -4,6 +4,143 @@ All notable changes to strutex will be documented here.
 
 ---
 
+## v0.8.0 (December 26, 2025)
+
+### 🚀 New Features
+
+**Core Processing Enhancements**
+
+- **Async Support**: `aprocess()` on `DocumentProcessor` and all Providers for high-concurrency apps.
+- **Batch Processing**: `process_batch()` and `aprocess_batch()` for efficient multi-document handling.
+- **Token & Cost Tracking**: Usage statistics (tokens, cost) aggregated in `ProcessingContext`.
+- **Hybrid Fallback**: `HybridProvider` robustly falls back to local PDF text extraction if LLM fails.
+- **Verification**: `verify()` method and `process(verify=True)` for LLM-based self-correction and auditing of results.
+
+**Cache System**
+
+- `MemoryCache` — In-memory LRU cache with TTL and thread-safety
+- `SQLiteCache` — Persistent SQLite-based cache with lazy cleanup
+- `FileCache` — Simple file-based JSON cache for debugging
+- `CacheKey` — Smart hashing of file content + prompt + schema + provider
+- Cache statistics tracking (hits, misses, hit rate)
+- Automatic expiration and cleanup
+
+**Processing Context**
+
+- `ProcessingContext` — State management for multi-step workflows
+- `BatchContext` — Progress tracking for batch processing
+- Extraction history with timing and error tracking
+- Step listeners for monitoring and logging
+- Serialization for debugging and persistence
+
+**Streaming Support**
+
+- `StreamingProcessor` — Real-time response streaming
+- `StreamChunk` — Typed streaming chunks
+- `stream_to_string()` / `stream_with_callback()` utilities
+- Async streaming support
+
+### 📁 New Files
+
+- `strutex/extractors/pdf.py` — PDF Extractor (pdfplumber)
+- `strutex/providers/hybrid.py` — Hybrid Provider
+- `strutex/cache/__init__.py` — Cache module
+- `strutex/cache/base.py` — Cache interface and CacheKey
+- `strutex/cache/memory.py` — MemoryCache
+- `strutex/cache/sqlite.py` — SQLiteCache
+- `strutex/cache/file.py` — FileCache
+- `strutex/context.py` — ProcessingContext and BatchContext
+- `strutex/providers/streaming.py` — Streaming support
+- `docs/cache.md` — Caching documentation
+- `docs/context.md` — Context documentation
+- `docs/streaming.md` — Streaming documentation
+- `examples/caching_example.py`
+- `examples/context_example.py`
+
+---
+
+## v0.7.0 (December 26, 2025)
+
+### 🚀 New Features
+
+**Multi-Provider Support**
+
+- `OpenAIProvider` — GPT-4o and GPT-4 Vision support
+- `AnthropicProvider` — Claude 3.5 Sonnet and Claude 3 Opus
+- `OllamaProvider` — Local models via Ollama (free, air-gapped)
+- `GroqProvider` — Ultra-fast inference at low cost
+
+**Provider Chains**
+
+- `ProviderChain` — Automatic fallback between providers
+- `local_first_chain()` — Ollama → Gemini → OpenAI
+- `cost_optimized_chain()` — Providers ordered by cost
+- `create_fallback_chain()` — Quick chain creation
+- Fallback callbacks for monitoring
+- `last_provider` property for tracking
+
+**Retry Infrastructure**
+
+- `RetryConfig` — Configurable retry with exponential backoff
+- `with_retry()` decorator for sync/async functions
+- `RateLimiter` — Simple rate limiting for API calls
+
+### 📁 New Files
+
+- `strutex/providers/openai.py` — OpenAI provider
+- `strutex/providers/anthropic.py` — Anthropic provider
+- `strutex/providers/ollama.py` — Ollama provider
+- `strutex/providers/groq.py` — Groq provider
+- `strutex/providers/chain.py` — Provider chain
+- `strutex/providers/retry.py` — Retry utilities
+- `docs/providers.md` — Updated provider documentation
+- `docs/provider-chains.md` — Chain documentation
+- `examples/provider_chain_example.py`
+
+---
+
+## v0.6.0 (December 26, 2025)
+
+### 🚀 New Features
+
+**Built-in Schemas Module**
+
+- 9 ready-to-use Pydantic schemas for common document types:
+  - `INVOICE_GENERIC`, `INVOICE_US`, `INVOICE_EU`
+  - `RECEIPT`, `PURCHASE_ORDER`, `BILL_OF_LADING`
+  - `BANK_STATEMENT`, `RESUME`, `CONTRACT_CLAUSE`
+- One-line imports: `from strutex.schemas import INVOICE_US`
+- Schema inheritance for customization
+
+**Logging Module**
+
+- `strutex.logging` module with standardized logging
+- `get_logger()`, `configure_logging()`, `set_level()`
+- Environment variable support: `STRUTEX_LOG_LEVEL`
+
+**CI/CD Improvements**
+
+- pytest-cov for coverage reporting
+- Codecov integration
+- mypy type checking (non-blocking)
+- Coverage badge in README
+
+### 📁 New Files
+
+- `strutex/schemas/__init__.py` — Schema exports
+- `strutex/schemas/invoice.py` — Invoice schemas
+- `strutex/schemas/receipt.py` — Receipt schema
+- `strutex/schemas/purchase_order.py` — PO schema
+- `strutex/schemas/shipping.py` — Bill of Lading
+- `strutex/schemas/financial.py` — Bank Statement
+- `strutex/schemas/resume.py` — Resume schema
+- `strutex/schemas/legal.py` — Contract clauses
+- `strutex/logging.py` — Logging module
+- `docs/schemas.md` — Schema documentation
+- `examples/schemas_example.py`
+
+---
+
 ## v0.3.0 (December 23, 2025)
 
 ### 🚀 New Features

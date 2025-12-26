@@ -11,6 +11,11 @@ keywords = ["pdf", "ai", "llm", "extraction", "json"]
 
 [tool.poetry.plugins."strutex.providers"]
 "gemini" = "strutex.providers.gemini:GeminiProvider"
+"openai" = "strutex.providers.openai:OpenAIProvider"
+"anthropic" = "strutex.providers.anthropic:AnthropicProvider"
+"ollama" = "strutex.providers.ollama:OllamaProvider"
+"groq" = "strutex.providers.groq:GroqProvider"
+"langdock" = "strutex.providers.langdock:LangdockProvider"
 
 [tool.poetry.plugins."strutex.validators"]
 "gemini" = "strutex.security.output.OutputValidator"
@@ -42,6 +47,11 @@ all = ["click", "pdf2image", "pytesseract"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
+pytest-cov = "^4.1.0"
+pytest-asyncio = "^0.23.0"
+hypothesis = "^6.92.0"
+mypy = "^1.8.0"
+pyyaml = "^6.0.0"
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.0"

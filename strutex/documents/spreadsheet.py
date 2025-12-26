@@ -29,3 +29,32 @@ def excel_to_csv_sheets(file_path: str) -> Dict[str, str]:
     except Exception as e:
         logger.error(f"Failed to convert Excel file {file_path}: {e}")
         raise RuntimeError(f"Error reading Excel file: {e}") from e
+
+
+def spreadsheet_to_text(file_path: str) -> str:
+    """
+    Convert a spreadsheet file to a text representation.
+    
+    Combines all sheets into a single text string suitable for LLM processing.
+    
+    Args:
+        file_path: Path to the spreadsheet file (.xlsx, .xls, .csv)
+        
+    Returns:
+        Text representation of the spreadsheet data
+    """
+    if file_path.endswith('.csv'):
+        df = pd.read_csv(file_path)
+        return df.to_csv(index=False)
+    
+    sheets = excel_to_csv_sheets(file_path)
+    
+    if len(sheets) == 1:
+        return list(sheets.values())[0]
+    
+    # Combine multiple sheets with headers
+    parts = []
+    for sheet_name, csv_content in sheets.items():
+        parts.append(f"=== Sheet: {sheet_name} ===\n{csv_content}")
+    
+    return "\n\n".join(parts)

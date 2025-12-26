@@ -1,5 +1,5 @@
 """
-strutex - Python AI PDF Utilities
+strutex - Structured AI Document Processing
 
 Extract structured JSON from documents using LLMs.
 """
@@ -36,8 +36,39 @@ from .plugins import (
     SecurityResult
 )
 
+# Extractors
+from .extractors import (
+    PDFExtractor,
+    ImageExtractor,
+    ExcelExtractor,
+    FormattedDocExtractor,
+    get_extractor,
+)
+
+# Validators
+from .validators import (
+    SchemaValidator,
+    SumValidator,
+    DateValidator,
+    ValidationChain,
+)
+
 # Providers
-from .providers import GeminiProvider
+from .providers import (
+    GeminiProvider,
+    OpenAIProvider,
+    AnthropicProvider,
+    OllamaProvider,
+    GroqProvider,
+    LangdockProvider,
+    HybridProvider,
+    HybridStrategy,
+    ProviderChain,
+    RetryConfig,
+    local_first_chain,
+    cost_optimized_chain,
+    StreamingProcessor,
+)
 
 # Security
 from .security import (
@@ -50,6 +81,18 @@ from .security import (
 
 # Pydantic support
 from .pydantic_support import pydantic_to_schema, validate_with_pydantic
+
+# Logging
+from .logging import get_logger, configure_logging, set_level
+
+# Context (stateful workflows)
+from .context import ProcessingContext, BatchContext
+
+# Cache
+from .cache import MemoryCache, SQLiteCache, FileCache, CacheKey
+
+# Schemas (ready-to-use Pydantic models)
+from . import schemas
 
 __all__ = [
     # Core
@@ -85,8 +128,31 @@ __all__ = [
     "SecurityPlugin",
     "SecurityResult",
     
+    # Extractors
+    "PDFExtractor",
+    "ImageExtractor",
+    "ExcelExtractor",
+    "get_extractor",
+    
+    # Validators
+    "SchemaValidator",
+    "SumValidator",
+    "DateValidator",
+    "ValidationChain",
+    
     # Providers
     "GeminiProvider",
+    "OpenAIProvider",
+    "AnthropicProvider",
+    "OllamaProvider",
+    "GroqProvider",
+    "LangdockProvider",
+    "HybridProvider",
+    "HybridStrategy",
+    "ProviderChain",
+    "RetryConfig",
+    "local_first_chain",
+    "cost_optimized_chain",
     
     # Security
     "SecurityChain",
@@ -98,4 +164,23 @@ __all__ = [
     # Pydantic
     "pydantic_to_schema",
     "validate_with_pydantic",
+    
+    # Logging
+    "get_logger",
+    "configure_logging",
+    "set_level",
+    
+    # Context (stateful workflows)
+    "ProcessingContext",
+    "BatchContext",
+    "StreamingProcessor",
+    
+    # Cache
+    "MemoryCache",
+    "SQLiteCache",
+    "FileCache",
+    "CacheKey",
+    
+    # Schemas module
+    "schemas",
 ]

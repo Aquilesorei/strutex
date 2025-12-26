@@ -6,6 +6,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI](https://img.shields.io/pypi/v/strutex.svg)](https://pypi.org/project/strutex/)
+[![codecov](https://codecov.io/gh/Aquilesorei/strutex/branch/main/graph/badge.svg)](https://codecov.io/gh/Aquilesorei/strutex)
 
 ---
 
@@ -17,6 +18,7 @@
 - **Multi-Provider LLM Support** — Gemini, OpenAI, Anthropic, and custom endpoints
 - **Universal Document Support** — PDFs, images, Excel, and custom formats
 - **Schema-Driven Extraction** — Define your output structure, get consistent JSON
+- **Verification & Self-Correction** — built-in audit loop for high accuracy
 - **Security First** — Built-in input sanitization and output validation
 
 ---
@@ -157,8 +159,10 @@ See [ROADMAP.md](ROADMAP.md) for the full development plan.
 
 - [x] v0.1.0 — Core functionality
 - [x] v0.2.0 — Plugin registry + Security layer
-- [x] v0.3.0 — Plugin System v2 (lazy loading, CLI, hooks)
-- [ ] v0.4.0 — Additional providers (OpenAI, Anthropic, Ollama)
+- [x] v0.3.0 — Plugin System v2
+- [x] v0.6.0 — Built-in Schemas & Logging
+- [x] v0.7.0 — Providers & Retries
+- [x] v0.8.0 — Async, Batch, Cache, Verification
 
 ---
 

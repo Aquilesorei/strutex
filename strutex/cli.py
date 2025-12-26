@@ -48,6 +48,128 @@ def cli():
     pass
 
 
+@cli.command("run")
+@click.argument("config_file", type=click.Path(exists=True))
+@click.option("--output", "-o", help="Output file path (default: stdout)")
+@click.option(
+    "--format", "output_format",
+    type=click.Choice(["json", "yaml"]),
+    default="json",
+    help="Output format"
+)
+@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
+def run_extraction(
+    config_file: str,
+    output: Optional[str],
+    output_format: str,
+    verbose: bool
+):
+    """Run document extraction from a YAML config file.
+    
+    The config file should contain:
+    
+    \b
+        provider: gemini          # Provider name
+        model: gemini-2.5-flash   # Model name (optional)
+        file: document.pdf        # File to process
+        prompt: "Extract..."      # Extraction prompt
+        schema:                   # Expected output schema
+          type: object
+          properties:
+            title:
+              type: string
+    
+    Examples:
+    
+        strutex run config.yaml
+        
+        strutex run config.yaml -o result.json
+        
+        strutex run config.yaml --format yaml -v
+    """
+    import os
+    
+    try:
+        import yaml
+    except ImportError:
+        click.echo("Error: PyYAML is required for config files.", err=True)
+        click.echo("Install with: pip install pyyaml", err=True)
+        sys.exit(1)
+    
+    # Load config
+    with open(config_file, "r") as f:
+        config = yaml.safe_load(f)
+    
+    if not config:
+        click.echo("Error: Empty config file.", err=True)
+        sys.exit(1)
+    
+    # Validate required fields
+    required = ["file", "prompt"]
+    missing = [f for f in required if f not in config]
+    if missing:
+        click.echo(f"Error: Missing required fields: {', '.join(missing)}", err=True)
+        sys.exit(1)
+    
+    file_path = config["file"]
+    if not os.path.exists(file_path):
+        click.echo(f"Error: File not found: {file_path}", err=True)
+        sys.exit(1)
+    
+    # Import processor
+    from . import DocumentProcessor
+    from .types import Schema
+    
+    # Build schema if provided
+    schema = None
+    if "schema" in config:
+        schema = Schema.from_dict(config["schema"])
+    
+    # Create processor
+    provider = config.get("provider", "gemini")
+    model = config.get("model")
+    
+    if verbose:
+        click.echo(f"Provider: {provider}")
+        if model:
+            click.echo(f"Model: {model}")
+        click.echo(f"File: {file_path}")
+    
+    try:
+        processor = DocumentProcessor(
+            provider=provider,
+            model_name=model
+        )
+        
+        result = processor.process(
+            file_path=file_path,
+            prompt=config["prompt"],
+            schema=schema
+        )
+        
+        # Format output
+        if output_format == "yaml":
+            output_str = yaml.dump(result, default_flow_style=False, allow_unicode=True)
+        else:
+            output_str = json.dumps(result, indent=2, ensure_ascii=False)
+        
+        # Write output
+        if output:
+            with open(output, "w") as f:
+                f.write(output_str)
+            if verbose:
+                click.echo(f"Output written to: {output}")
+        else:
+            click.echo(output_str)
+            
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+        if verbose:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
 @cli.group()
 def plugins():
     """Plugin management commands."""

@@ -37,14 +37,24 @@ nav:
   - Getting Started: getting-started.md
   - User Guide:
       - Schema Types: schema-types.md
+      - Built-in Schemas: schemas.md
       - Prompt Builder: prompt-builder.md
       - Pydantic Support: pydantic.md
       - CLI Commands: cli.md
-  - Architecture:
+      - Verification: verification.md
+  - Providers:
+      - Overview: providers.md
+      - Provider Chains: provider-chains.md
+      - Caching: cache.md
+  - Advanced:
       - Plugin System: plugins.md
       - Hooks: hooks.md
+      - Processing Context: context.md
+      - Streaming: streaming.md
+  - Architecture:
+      - Extractors: extractors.md
+      - Validators: validators.md
       - Security Layer: security.md
-      - Providers: providers.md
   - API Reference: api-reference.md
   - Changelog: changelog.md
 

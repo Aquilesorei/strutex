@@ -13,6 +13,7 @@ from .types import Schema
 from .plugins.registry import PluginRegistry
 from .plugins.base import SecurityPlugin, SecurityResult
 from .providers.base import Provider
+from .context import BatchContext, ProcessingContext
 
 # Type aliases for hook callbacks
 PreProcessCallback = Callable[[str, str, Any, str, Dict[str, Any]], Optional[Dict[str, Any]]]
@@ -338,6 +339,7 @@ class DocumentProcessor:
         schema: Optional[Schema] = None,
         model: Optional[Type] = None,
         security: Optional[Union[SecurityPlugin, bool]] = None,
+        verify: bool = False,
         **kwargs
     ) -> Any:
         """
@@ -358,6 +360,8 @@ class DocumentProcessor:
                 - `False`: Disable security
                 - `SecurityPlugin`: Use specific plugin
                 - `None`: Use processor default
+            verify: If True, performs a second pass to verify and correct the result.
+            context: Optional ProcessingContext for state tracking.
             **kwargs: Additional provider-specific options.
 
         Returns:
@@ -482,8 +486,317 @@ class DocumentProcessor:
         if pydantic_model is not None:
             from .pydantic_support import validate_with_pydantic
             result = validate_with_pydantic(result, pydantic_model)
+            
+        # Optional Verification Step
+        if verify:
+            result = self.verify(file_path, result, schema=schema, model=model, **kwargs)
 
         return result
+
+    def verify(
+        self,
+        file_path: str,
+        result: Any,
+        schema: Optional[Schema] = None,
+        model: Optional[Type] = None,
+        verify_prompt: Optional[str] = None,
+        **kwargs
+    ) -> Any:
+        """
+        Verify the extracted result against the document.
+        
+        Args:
+            file_path: Path to the source document
+            result: The result to verify (dict or Pydantic model)
+            schema: The schema used for extraction
+            model: The Pydantic model used for extraction
+            verify_prompt: Optional custom verification prompt
+            **kwargs: Provider options
+            
+        Returns:
+            Verified (and potentially corrected) result
+        """
+        import json
+        
+        # Prepare verification prompt
+        if verify_prompt is None:
+            verify_prompt = (
+                "You are a strict data auditor. Your task is to verify the extracted data "
+                "against the document provided. \n"
+                "Review the data below. If it contains errors or missing fields that exist "
+                "in the document, CORRECT them. If the data is correct, return it as is.\n"
+                "Return the final validated JSON strictly adhering to the schema."
+            )
+            
+        # Serialize result for prompt
+        if hasattr(result, "model_dump_json"):
+            result_str = result.model_dump_json()
+        elif isinstance(result, dict):
+            result_str = json.dumps(result, default=str)
+        else:
+            result_str = str(result)
+            
+        full_prompt = f"{verify_prompt}\n\n[EXTRACTED DATA TO VERIFY]:\n{result_str}"
+        
+        # Call process recursively but disable verification to avoid loop
+        return self.process(
+            file_path=file_path,
+            prompt=full_prompt,
+            schema=schema,
+            model=model,
+            verify=False,
+            **kwargs
+        )
+
+    async def aprocess(
+        self,
+        file_path: str,
+        prompt: str,
+        schema: Optional[Schema] = None,
+        model: Optional[Type] = None,
+        security: Optional[Union[SecurityPlugin, bool]] = None,
+        verify: bool = False,
+        **kwargs
+    ) -> Any:
+        """
+        Async version of `process`.
+        
+        Args:
+            file_path: Absolute path to the source file
+            prompt: Extraction instruction
+            schema: Schema definition
+            model: Pydantic model
+            security: Security configuration
+            **kwargs: Provider options
+            
+        Returns:
+            Extracted data or Pydantic instance
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"File not found: {file_path}")
+
+        # Hooks currently run synchronously - in future we may add async hooks
+        self._ensure_hooks_registered()
+
+        # Handle Pydantic model
+        pydantic_model = None
+        if model is not None:
+            from .pydantic_support import pydantic_to_schema
+            schema = pydantic_to_schema(model)
+            pydantic_model = model
+
+        if schema is None:
+            raise ValueError("Either 'schema' or 'model' must be provided")
+
+        mime_type = get_mime_type(file_path)
+
+        mime_type = get_mime_type(file_path)
+
+        # Create context for hooks
+        context: Dict[str, Any] = {
+            "file_path": file_path,
+            "mime_type": mime_type,
+            "kwargs": kwargs,
+        }
+
+        # Run pre-process hooks (sync)
+        from .plugins.hooks import call_hook
+        pre_results = call_hook(
+            "pre_process",
+            file_path=file_path,
+            prompt=prompt,
+            schema=schema,
+            mime_type=mime_type,
+            context=context
+        )
+        for hook_result in pre_results:
+            if hook_result and isinstance(hook_result, dict) and "prompt" in hook_result:
+                prompt = hook_result["prompt"]
+
+        # Security
+        effective_security = self._resolve_security(security)
+        if effective_security:
+            input_result = effective_security.validate_input(prompt)
+            if not input_result.valid:
+                raise SecurityError(f"Input rejected: {input_result.reason}")
+            prompt = input_result.text or prompt
+
+        # Async Processing
+        try:
+            result = await self._provider.aprocess(
+                file_path=file_path,
+                prompt=prompt,
+                schema=schema,
+                mime_type=mime_type,
+                **kwargs
+            )
+        except Exception as e:
+            # Run error hooks (sync)
+            error_results = call_hook(
+                "on_error",
+                error=e,
+                file_path=file_path,
+                context=context
+            )
+            fallback = None
+            for hook_result in error_results:
+                if hook_result is not None:
+                    fallback = hook_result
+                    break
+            
+            if fallback is not None:
+                result = fallback
+            else:
+                raise
+
+        # Security output
+        if effective_security and isinstance(result, dict):
+            output_result = effective_security.validate_output(result)
+            if not output_result.valid:
+                raise SecurityError(f"Output rejected: {output_result.reason}")
+            result = output_result.data or result
+
+        # Post-process (sync)
+        if isinstance(result, dict):
+            post_results = call_hook(
+                "post_process",
+                result=result,
+                context=context
+            )
+            for hook_result in post_results:
+                if hook_result is not None and isinstance(hook_result, dict):
+                    result = hook_result
+
+        # Validation
+        if pydantic_model is not None:
+            from .pydantic_support import validate_with_pydantic
+            result = validate_with_pydantic(result, pydantic_model)
+
+        if verify:
+            result = await self.averify(file_path, result, schema=schema, model=model, **kwargs)
+
+        return result
+
+    async def averify(
+        self,
+        file_path: str,
+        result: Any,
+        schema: Optional[Schema] = None,
+        model: Optional[Type] = None,
+        verify_prompt: Optional[str] = None,
+        **kwargs
+    ) -> Any:
+        """Async version of verify."""
+        import json
+        
+        if verify_prompt is None:
+            verify_prompt = (
+                "You are a strict data auditor. Your task is to verify the extracted data "
+                "against the document provided. \n"
+                "Review the data below. If it contains errors or missing fields that exist "
+                "in the document, CORRECT them. If the data is correct, return it as is.\n"
+                "Return the final validated JSON strictly adhering to the schema."
+            )
+            
+        if hasattr(result, "model_dump_json"):
+            result_str = result.model_dump_json()
+        elif isinstance(result, dict):
+            result_str = json.dumps(result, default=str)
+        else:
+            result_str = str(result)
+            
+        full_prompt = f"{verify_prompt}\n\n[EXTRACTED DATA TO VERIFY]:\n{result_str}"
+        
+        return await self.aprocess(
+            file_path=file_path,
+            prompt=full_prompt,
+            schema=schema,
+            model=model,
+            verify=False,
+            **kwargs
+        )
+
+    def process_batch(
+        self,
+        file_paths: List[str],
+        prompt: str,
+        schema: Optional[Schema] = None,
+        model: Optional[Type] = None,
+        max_workers: int = 4,
+        **kwargs
+    ) -> BatchContext:
+        """
+        Process multiple documents in parallel using threads.
+        
+        Args:
+            file_paths: List of file paths to process
+            prompt: Extraction prompt
+            schema: Output schema
+            model: Pydantic model
+            max_workers: Number of concurrent threads
+            **kwargs: Provider options
+            
+        Returns:
+            BatchContext containing results and stats
+        """
+        import concurrent.futures
+        from .context import BatchContext
+        
+        batch_ctx = BatchContext(total_documents=len(file_paths))
+        
+        def _process_one(path: str):
+            try:
+                result = self.process(path, prompt, schema, model, **kwargs)
+                batch_ctx.add_result(path, result)
+            except Exception as e:
+                batch_ctx.add_error(path, e)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            executor.map(_process_one, file_paths)
+            
+        return batch_ctx
+
+    async def aprocess_batch(
+        self,
+        file_paths: List[str],
+        prompt: str,
+        schema: Optional[Schema] = None,
+        model: Optional[Type] = None,
+        max_concurrency: int = 4,
+        **kwargs
+    ) -> BatchContext:
+        """
+        Async process multiple documents in parallel.
+        
+        Args:
+            file_paths: List of file paths
+            prompt: Extraction prompt
+            schema: Output schema
+            model: Pydantic model
+            max_concurrency: Max concurrent async tasks
+            **kwargs: Provider options
+            
+        Returns:
+            BatchContext containing results and stats
+        """
+        import asyncio
+        from .context import BatchContext
+        
+        batch_ctx = BatchContext(total_documents=len(file_paths))
+        semaphore = asyncio.Semaphore(max_concurrency)
+        
+        async def _aprocess_one(path: str):
+            async with semaphore:
+                try:
+                    result = await self.aprocess(path, prompt, schema, model, **kwargs)
+                    batch_ctx.add_result(path, result)
+                except Exception as e:
+                    batch_ctx.add_error(path, e)
+        
+        tasks = [_aprocess_one(path) for path in file_paths]
+        await asyncio.gather(*tasks)
+        
+        return batch_ctx
 
     def _resolve_security(
         self,
