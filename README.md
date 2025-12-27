@@ -23,6 +23,28 @@
 
 ---
 
+## When to Choose Strutex
+
+**Good fit:**
+
+- Document → JSON (invoices, receipts, forms, tables)
+- Schema-validated output, not free-form LLM text
+- Security by default (injection detection, PII redaction)
+- Local/air-gapped (Ollama, custom endpoints)
+- Lightweight deps, pluggable architecture
+- Production-ready: caching, batch/async, verification
+
+**Not a fit:**
+
+- Agents, tools, autonomous workflows
+- RAG / vector search
+- Multi-step reasoning chains
+- Full LLM app frameworks → use LangChain
+
+> **TL;DR**: strutex turns messy documents into trustworthy structured data.
+
+---
+
 ## What's New in v0.8.1 🚀
 
 - **Smart Caching**: Built-in Memory, SQLite, and Redis-ready caching to save costs on redundant extractions.
