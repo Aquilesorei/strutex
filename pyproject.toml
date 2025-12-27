@@ -68,7 +68,13 @@ mkdocstrings = {extras = ["python"], version = "^0.27.0"}
 mike = "^2.1.0"
 
 [tool.coverage.run]
-omit = ["strutex/cli.py"]
+omit = [
+    "strutex/cli.py",
+    "strutex/integrations/langchain.py",
+    "strutex/integrations/llamaindex.py",
+    "strutex/integrations/haystack.py",
+    "strutex/integrations/unstructured.py",
+]
 
 [build-system]
 requires = ["poetry-core"]
