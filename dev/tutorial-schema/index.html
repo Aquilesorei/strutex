@@ -2064,9 +2064,9 @@
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="s2">&quot;total&quot;</span><span class="p">:</span> <span class="n">Number</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Total amount&quot;</span><span class="p">),</span>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="n">Array</span><span class="p">(</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>            <span class="n">items</span><span class="o">=</span><span class="n">Object</span><span class="p">(</span><span class="n">properties</span><span class="o">=</span><span class="p">{</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">String</span><span class="p">(),</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>                <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="n">Number</span><span class="p">(),</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>                <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="n">Number</span><span class="p">()</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">String</span><span class="p">,</span>  <span class="c1"># Simplified syntax!</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>                <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="n">Number</span><span class="p">,</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>                <span class="s2">&quot;unit_price&quot;</span><span class="p">:</span> <span class="n">Number</span>
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>            <span class="p">})</span>
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="p">)</span>
 </span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="p">}</span>
@@ -2112,6 +2112,7 @@
 </table>
 <hr />
 <h2 id="field-types-reference">Field Types Reference<a class="headerlink" href="#field-types-reference" title="Permanent link">&para;</a></h2>
+<p>You can use types as classes (e.g., <code>String</code>) or instances (e.g., <code>String(description="...")</code>).</p>
 <table>
 <thead>
 <tr>
@@ -2123,22 +2124,22 @@
 <tbody>
 <tr>
 <td><code>str</code></td>
-<td><code>String()</code></td>
+<td><code>String</code></td>
 <td>Text, IDs, names</td>
 </tr>
 <tr>
 <td><code>int</code></td>
-<td><code>Integer()</code></td>
+<td><code>Integer</code></td>
 <td>Counts, quantities</td>
 </tr>
 <tr>
 <td><code>float</code></td>
-<td><code>Number()</code></td>
+<td><code>Number</code></td>
 <td>Prices, percentages</td>
 </tr>
 <tr>
 <td><code>bool</code></td>
-<td><code>Boolean()</code></td>
+<td><code>Boolean</code></td>
 <td>Yes/no fields</td>
 </tr>
 <tr>
@@ -2148,7 +2149,7 @@
 </tr>
 <tr>
 <td><code>Optional[T]</code></td>
-<td>nullable=True</td>
+<td><code>T(nullable=True)</code></td>
 <td>Fields that may be missing</td>
 </tr>
 </tbody>
