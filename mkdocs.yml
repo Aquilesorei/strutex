@@ -35,27 +35,43 @@ theme:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Tutorial:
+      - Quickstart (5 min): tutorial-quickstart.md
+      - Your First Schema: tutorial-schema.md
+      - Switching Providers: tutorial-providers.md
+      - Adding Validation: tutorial-validation.md
+      - Caching: tutorial-caching.md
+      - Processing Hooks: tutorial-hooks.md
+      - Security: tutorial-security.md
+      - Batch & Async: tutorial-batch.md
+      - Streaming: tutorial-streaming.md
+      - Error Handling: tutorial-error-handling.md
+      - File Uploads & BytesIO: tutorial-document-input.md
+      - Framework Integrations: tutorial-integrations.md
+      - Creating Custom Plugins: tutorial-custom-plugins.md
+      - Use Cases: tutorial-use-cases.md
+      - Prompt Engineering: tutorial-prompts.md
   - User Guide:
       - Schema Types: schema-types.md
       - Built-in Schemas: schemas.md
       - Prompt Builder: prompt-builder.md
       - Pydantic Support: pydantic.md
-      - CLI Commands: cli.md
       - Verification: verification.md
   - Providers:
       - Overview: providers.md
       - Provider Chains: provider-chains.md
-      - Caching: cache.md
+      - Caching Reference: cache.md
+  - Integrations (Experimental): integrations.md
   - Advanced:
       - Plugin System: plugins.md
-      - Hooks: hooks.md
+      - Hooks Reference: hooks.md
       - Processing Context: context.md
       - Streaming: streaming.md
+      - CLI Commands: cli.md
   - Architecture:
       - Extractors: extractors.md
       - Validators: validators.md
-      - Security Layer: security.md
-  - Integrations: integrations.md
+      - Input Sanitization: security.md
   - API Reference: api-reference.md
   - Changelog: changelog.md
 

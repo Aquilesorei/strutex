@@ -4,76 +4,120 @@
 
 ---
 
-## Features
-
-<div class="grid cards" markdown>
-
-- :material-clock-fast:{ .lg .middle } **Quick Setup**
-
-  Install with pip and extract data from PDFs in minutes.
-
-  [:octicons-arrow-right-24: Getting Started](getting-started.md)
-
-- :material-puzzle:{ .lg .middle } **Fully Pluggable**
-
-  Every component is a plugin. Swap providers, add validators.
-
-  [:octicons-arrow-right-24: Plugin System](plugins.md)
-
-- :material-shield-check:{ .lg .middle } **Security Layer**
-
-  Protect against prompt injection with built-in sanitizers.
-
-  [:octicons-arrow-right-24: Security](security.md)
-
-- :material-language-python:{ .lg .middle } **Pydantic Support**
-
-  Use Pydantic models for type-safe extractions.
-
-  [:octicons-arrow-right-24: Pydantic](pydantic.md)
-
-</div>
-
----
-
 ## Quick Example
 
-=== "With Schema"
+```python
+from strutex import DocumentProcessor, GeminiProvider
+from pydantic import BaseModel
 
-    ```python
-    from strutex import DocumentProcessor, Object, String, Number
+class Invoice(BaseModel):
+    invoice_number: str
+    vendor: str
+    total: float
 
-    schema = Object(properties={
-        "invoice_number": String(description="Invoice ID"),
-        "total": Number(description="Total amount")
-    })
+processor = DocumentProcessor(provider=GeminiProvider())
+result = processor.process("invoice.pdf", "Extract invoice data", model=Invoice)
 
-    processor = DocumentProcessor(provider="gemini")
-    result = processor.process("invoice.pdf", "Extract invoice data", schema)
-
-    print(result["invoice_number"])  # "INV-2024-001"
-    ```
-
-=== "With Pydantic"
-
-    ```python
-    from pydantic import BaseModel
-    from strutex import DocumentProcessor
-
-    class Invoice(BaseModel):
-        invoice_number: str
-        total: float
-
-    processor = DocumentProcessor(provider="gemini")
-    result = processor.process("invoice.pdf", "Extract data", model=Invoice)
-
-    # result is a validated Invoice instance!
-    print(result.invoice_number)
-    ```
+print(result.invoice_number)  # Validated Pydantic model
+```
 
 ---
 
-## Architecture
+## Documentation Map
+
+### 📚 Tutorial (Start Here)
+
+Progressive learning path from basics to advanced:
+
+| #   | Page                                         | Description                                    |
+| --- | -------------------------------------------- | ---------------------------------------------- |
+| 1   | [Quickstart](tutorial-quickstart.md)         | First extraction in 5 minutes                  |
+| 2   | [Your First Schema](tutorial-schema.md)      | Define custom schemas (Pydantic & native)      |
+| 3   | [Switching Providers](tutorial-providers.md) | Configure GeminiProvider, OpenAIProvider, etc. |
+| 4   | [Adding Validation](tutorial-validation.md)  | Validators and verification loop               |
+| 5   | [Caching](tutorial-caching.md)               | MemoryCache, SQLiteCache, FileCache            |
+| 6   | [Processing Hooks](tutorial-hooks.md)        | Pre/post processing hooks                      |
+| 7   | [Input Sanitization](tutorial-security.md)   | Input cleaning, PII redaction                  |
+| 8   | [Batch & Async](tutorial-batch.md)           | process_batch, aprocess                        |
+| 9   | [Streaming](tutorial-streaming.md)           | Real-time extraction feedback                  |
+| 10  | [Error Handling](tutorial-error-handling.md) | Errors, retries, debugging                     |
+| 11  | [File Uploads](tutorial-document-input.md)   | BytesIO, Flask, FastAPI                        |
+| 12  | [Integrations](tutorial-integrations.md)     | LangChain, LlamaIndex (Experimental)           |
+| 13  | [Custom Plugins](tutorial-custom-plugins.md) | Create Provider, Extractor, SecurityPlugin     |
+| 14  | [Use Cases](tutorial-use-cases.md)           | Invoice, Receipt, Resume examples              |
+| 15  | [Prompt Engineering](tutorial-prompts.md)    | StructuredPrompt builder                       |
+
+---
+
+### 📖 User Guide
+
+Reference documentation for core features:
+
+| Section     | Pages                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| **Schemas** | [Schema Types](schema-types.md) · [Built-in Schemas](schemas.md) · [Pydantic Support](pydantic.md) |
+| **Prompts** | [Prompt Builder](prompt-builder.md) · [Verification](verification.md)                              |
+
+---
+
+### ⚡ Providers
+
+LLM provider configuration and optimization:
+
+| Page                                  | Description                    |
+| ------------------------------------- | ------------------------------ |
+| [Overview](providers.md)              | All supported providers        |
+| [Provider Chains](provider-chains.md) | Fallback and cost optimization |
+| [Caching Reference](cache.md)         | Detailed cache API             |
+
+---
+
+### 🔌 Integrations
+
+Use with popular AI frameworks:
+
+| Page                            | Description                                   |
+| ------------------------------- | --------------------------------------------- |
+| [Integrations](integrations.md) | LangChain, LlamaIndex, Haystack, Unstructured |
+
+---
+
+### 🔧 Advanced
+
+For power users and contributors:
+
+| Page                             | Description                     |
+| -------------------------------- | ------------------------------- |
+| [Plugin System](plugins.md)      | Full plugin API reference       |
+| [Hooks Reference](hooks.md)      | Hook specifications             |
+| [Processing Context](context.md) | BatchContext, ProcessingContext |
+| [Streaming](streaming.md)        | Streaming API reference         |
+| [CLI Commands](cli.md)           | Command-line interface          |
+
+---
+
+### 🏗️ Architecture
+
+Internal design and extension points:
+
+| Page                              | Description                  |
+| --------------------------------- | ---------------------------- |
+| [Extractors](extractors.md)       | PDF, Excel, Image extractors |
+| [Validators](validators.md)       | Schema, Sum, Date validators |
+| [Input Sanitization](security.md) | Sanitization API             |
+
+---
+
+### 📋 Reference
+
+| Page                              | Description            |
+| --------------------------------- | ---------------------- |
+| [API Reference](api-reference.md) | Full API documentation |
+| [Changelog](changelog.md)         | Version history        |
+
+---
+
+## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -84,10 +128,9 @@
 │  │  Chain   │  │  Plugin  │  │  Plugin  │  │  Plugin  │    │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────┘    │
 │         ↓            ↓            ↓            ↓            │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │              Plugin Registry                        │    │
-│  │   @register("provider") / @register("validator")  │    │
-│  └────────────────────────────────────────────────────┘    │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │                   Plugin Registry                       │ │
+│  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -95,10 +138,27 @@
 
 ## Key Features
 
-| Feature                | Description                                           |
-| ---------------------- | ----------------------------------------------------- |
-| **Plugin System**      | Register custom providers, validators, postprocessors |
-| **Security Layer**     | Input sanitization, prompt injection detection        |
-| **Pydantic Support**   | Type-safe extractions with automatic validation       |
-| **Structured Prompts** | Build organized prompts with the fluent API           |
-| **Multi-Provider**     | Gemini, OpenAI, Anthropic (extensible)                |
+| Feature                    | Description                                       |
+| -------------------------- | ------------------------------------------------- |
+| **15 Tutorials**           | Progressive learning path                         |
+| **6 Providers**            | Gemini, OpenAI, Anthropic, Ollama, Groq, Langdock |
+| **Plugin System**          | Extend with custom providers, validators          |
+| **Pydantic Support**       | Type-safe extractions                             |
+| **Caching**                | Reduce API costs                                  |
+| **Framework Integrations** | LangChain, LlamaIndex, Haystack                   |
+| **Security Layer**         | Injection detection, PII redaction                |
+| **CLI Tools**              | `strutex run`, `strutex prompt build`             |
+
+---
+
+## Installation
+
+```bash
+pip install strutex
+
+# With integrations
+pip install strutex[langchain]
+pip install strutex[all]
+```
+
+[→ Getting Started](getting-started.md)

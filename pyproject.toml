@@ -74,6 +74,9 @@ omit = [
     "strutex/integrations/llamaindex.py",
     "strutex/integrations/haystack.py",
     "strutex/integrations/unstructured.py",
+    "strutex/schemas/*",
+    "docs/*",
+    "examples/*",
 ]
 
 [build-system]

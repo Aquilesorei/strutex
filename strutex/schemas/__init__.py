@@ -13,7 +13,7 @@ Example:
     >>> print(result.invoice_number)
 
 Available Schemas:
-    - INVOICE_GENERIC, INVOICE_US, INVOICE_EU
+    - INVOICE_GENERIC, INVOICE_US, INVOICE_EU, INVOICE_DE, INVOICE_UK, INVOICE_FR
     - RECEIPT
     - PURCHASE_ORDER
     - BILL_OF_LADING
@@ -26,9 +26,15 @@ from .invoice import (
     InvoiceGeneric,
     InvoiceUS,
     InvoiceEU,
+    InvoiceDE,
+    InvoiceUK,
+    InvoiceFR,
     INVOICE_GENERIC,
     INVOICE_US,
     INVOICE_EU,
+    INVOICE_DE,
+    INVOICE_UK,
+    INVOICE_FR,
 )
 
 from .receipt import (
@@ -67,9 +73,15 @@ __all__ = [
     "InvoiceGeneric",
     "InvoiceUS", 
     "InvoiceEU",
+    "InvoiceDE",
+    "InvoiceUK",
+    "InvoiceFR",
     "INVOICE_GENERIC",
     "INVOICE_US",
     "INVOICE_EU",
+    "INVOICE_DE",
+    "INVOICE_UK",
+    "INVOICE_FR",
     
     # Receipts
     "Receipt",

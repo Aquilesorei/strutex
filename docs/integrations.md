@@ -2,6 +2,10 @@
 
 Strutex integrates with popular AI/ML frameworks, allowing you to use its structured extraction capabilities within existing pipelines.
 
+> [!WARNING] > **Experimental:** These integrations are community-maintained and may break with framework updates.
+> LangChain, LlamaIndex, and Haystack evolve rapidly. Pin your versions and test after upgrades.
+> Issues: [GitHub](https://github.com/Aquilesorei/strutex/issues)
+
 ## Installation
 
 Install with integration extras:

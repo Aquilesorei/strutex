@@ -45,6 +45,52 @@ class StructuredPrompt:
         self.field_rules: Dict[str, List[str]] = {}
         self.output_guidelines: List[str] = []
 
+    @classmethod
+    def from_schema(cls, schema, persona: Optional[str] = None) -> "StructuredPrompt":
+        """
+        Create a StructuredPrompt with field rules auto-generated from a Pydantic schema.
+        
+        Args:
+            schema: A Pydantic BaseModel class with Field descriptions.
+            persona: Optional custom persona string.
+            
+        Returns:
+            A StructuredPrompt with field rules for each described field.
+            
+        Example:
+            >>> from pydantic import BaseModel, Field
+            >>> class Invoice(BaseModel):
+            ...     invoice_number: str = Field(description="Unique invoice ID")
+            ...     total: float = Field(description="Final amount due")
+            >>> 
+            >>> prompt = StructuredPrompt.from_schema(Invoice)
+            >>> prompt.add_general_rule("Use ISO dates")
+            >>> print(prompt.compile())
+        """
+        if persona:
+            instance = cls(persona=persona)
+        else:
+            instance = cls()
+        
+        # Check if it's a Pydantic model
+        if hasattr(schema, "model_fields"):
+            # Pydantic v2
+            for field_name, field_info in schema.model_fields.items():
+                description = field_info.description
+                if description:
+                    # Mark required fields as critical
+                    is_required = field_info.is_required()
+                    instance.add_field_rule(field_name, description, critical=is_required)
+        elif hasattr(schema, "__fields__"):
+            # Pydantic v1 fallback
+            for field_name, field_info in schema.__fields__.items():
+                description = field_info.field_info.description
+                if description:
+                    is_required = field_info.required
+                    instance.add_field_rule(field_name, description, critical=is_required)
+        
+        return instance
+
     def add_general_rule(self, *rules: str) -> "StructuredPrompt":
         """
         Adds one or more high-level rules.

@@ -124,7 +124,74 @@ class InvoiceEU(InvoiceGeneric):
     intra_community: bool = Field(False, description="Intra-community supply (0% VAT)")
 
 
+class InvoiceDE(InvoiceEU):
+    """
+    German invoice schema (Rechnung).
+    
+    Includes fields for:
+    - Steuernummer and USt-IdNr
+    - German VAT rates (19%, 7%)
+    - Pflichtangaben (mandatory information)
+    """
+    
+    # German-specific
+    steuernummer: Optional[str] = Field(None, description="German tax number (Steuernummer)")
+    ust_id: Optional[str] = Field(None, description="German VAT ID (USt-IdNr, format: DE123456789)")
+    rechnungsnummer: Optional[str] = Field(None, description="Invoice number (Rechnungsnummer)")
+    rechnungsdatum: Optional[str] = Field(None, description="Invoice date (Rechnungsdatum, DD.MM.YYYY)")
+    leistungsdatum: Optional[str] = Field(None, description="Service date (Leistungsdatum)")
+    zahlungsziel: Optional[str] = Field(None, description="Payment terms (Zahlungsziel)")
+    skonto: Optional[float] = Field(None, description="Early payment discount (Skonto %)")
+    kleinunternehmer: bool = Field(False, description="Small business exemption (§19 UStG)")
+
+
+class InvoiceUK(InvoiceGeneric):
+    """
+    UK invoice schema.
+    
+    Includes fields for:
+    - VAT number (GB format)
+    - VAT rates (20%, 5%, 0%)
+    - UK-specific address format
+    """
+    
+    # UK-specific
+    vat_number: Optional[str] = Field(None, description="UK VAT number (format: GB123456789)")
+    vat_rate: Optional[float] = Field(None, description="VAT rate (20%, 5%, or 0%)")
+    vat_amount: Optional[float] = Field(None, description="VAT amount in GBP")
+    net_amount: Optional[float] = Field(None, description="Amount excluding VAT")
+    gross_amount: Optional[float] = Field(None, description="Amount including VAT")
+    company_reg_number: Optional[str] = Field(None, description="Companies House registration number")
+    currency: str = Field("GBP", description="Currency code (typically GBP)")
+
+
+class InvoiceFR(InvoiceEU):
+    """
+    French invoice schema (Facture).
+    
+    Includes fields for:
+    - SIRET/SIREN numbers
+    - French VAT rates (20%, 10%, 5.5%, 2.1%)
+    - Mentions obligatoires (mandatory mentions)
+    """
+    
+    # French-specific
+    siret: Optional[str] = Field(None, description="SIRET number (14 digits)")
+    siren: Optional[str] = Field(None, description="SIREN number (9 digits)")
+    tva_intra: Optional[str] = Field(None, description="French VAT ID (format: FR12345678901)")
+    numero_facture: Optional[str] = Field(None, description="Invoice number (Numéro de facture)")
+    date_facture: Optional[str] = Field(None, description="Invoice date (Date de facture, DD/MM/YYYY)")
+    date_echeance: Optional[str] = Field(None, description="Due date (Date d'échéance)")
+    mode_paiement: Optional[str] = Field(None, description="Payment method (Mode de paiement)")
+    penalites_retard: Optional[str] = Field(None, description="Late payment penalties clause")
+    escompte: Optional[float] = Field(None, description="Early payment discount (Escompte %)")
+    code_naf: Optional[str] = Field(None, description="NAF/APE activity code")
+
+
 # Convenient schema instances for direct use
 INVOICE_GENERIC = InvoiceGeneric
 INVOICE_US = InvoiceUS
 INVOICE_EU = InvoiceEU
+INVOICE_DE = InvoiceDE
+INVOICE_UK = InvoiceUK
+INVOICE_FR = InvoiceFR

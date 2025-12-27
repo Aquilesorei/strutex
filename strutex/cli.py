@@ -354,6 +354,200 @@ def cache_command(clear: bool):
         click.echo("Run 'strutex plugins refresh' to update.")
 
 
+@cli.group()
+def prompt():
+    """Prompt builder commands."""
+    pass
+
+
+@prompt.command("build")
+@click.option(
+    "--persona", "-p",
+    default="You are a highly accurate AI Data Extraction Assistant.",
+    help="System persona for the prompt."
+)
+@click.option(
+    "--rule", "-r",
+    multiple=True,
+    help="General rule (can be used multiple times)."
+)
+@click.option(
+    "--field", "-f",
+    multiple=True,
+    help="Field rule as 'name:rule' or 'name:rule:critical' (can be used multiple times)."
+)
+@click.option(
+    "--output", "-o",
+    multiple=True,
+    help="Output guideline (can be used multiple times)."
+)
+@click.option(
+    "--from-schema", "-s",
+    type=click.Path(exists=True),
+    help="Python file with Pydantic schema to auto-generate from."
+)
+@click.option(
+    "--schema-class", "-c",
+    default=None,
+    help="Class name to use from schema file (defaults to first BaseModel found)."
+)
+@click.option(
+    "--save", type=click.Path(),
+    help="Save prompt to file."
+)
+def build_prompt(persona, rule, field, output, from_schema, schema_class, save):
+    """
+    Build a structured prompt interactively or from options.
+    
+    Examples:
+    
+    \b
+        # Build with options
+        strutex prompt build -r "Use ISO dates" -r "No guessing" \\
+            -f "total:Final amount due:critical" -f "vendor:Company name"
+        
+    \b
+        # Generate from Pydantic schema
+        strutex prompt build --from-schema models.py --schema-class Invoice
+        
+    \b    
+        # Save to file
+        strutex prompt build -r "Extract all data" -o prompt.txt
+    """
+    from .prompts import StructuredPrompt
+    
+    # Create prompt builder
+    builder = StructuredPrompt(persona=persona)
+    
+    # Load from schema if provided
+    if from_schema:
+        try:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("schema_module", from_schema)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            
+            # Find the schema class
+            from pydantic import BaseModel
+            schema_cls = None
+            
+            if schema_class:
+                schema_cls = getattr(module, schema_class, None)
+                if schema_cls is None:
+                    click.echo(f"Error: Class '{schema_class}' not found in {from_schema}", err=True)
+                    sys.exit(1)
+            else:
+                # Find first BaseModel subclass
+                for name in dir(module):
+                    obj = getattr(module, name)
+                    if isinstance(obj, type) and issubclass(obj, BaseModel) and obj is not BaseModel:
+                        schema_cls = obj
+                        break
+            
+            if schema_cls:
+                click.echo(f"Generating from schema: {schema_cls.__name__}")
+                builder = StructuredPrompt.from_schema(schema_cls, persona=persona)
+            else:
+                click.echo(f"Error: No Pydantic BaseModel found in {from_schema}", err=True)
+                sys.exit(1)
+                
+        except Exception as e:
+            click.echo(f"Error loading schema: {e}", err=True)
+            sys.exit(1)
+    
+    # Add general rules
+    for r in rule:
+        builder.add_general_rule(r)
+    
+    # Add field rules
+    for f in field:
+        parts = f.split(":")
+        if len(parts) >= 2:
+            field_name = parts[0]
+            field_rule = parts[1]
+            critical = len(parts) > 2 and parts[2].lower() == "critical"
+            builder.add_field_rule(field_name, field_rule, critical=critical)
+        else:
+            click.echo(f"Warning: Invalid field format '{f}', expected 'name:rule'", err=True)
+    
+    # Add output guidelines
+    for o in output:
+        builder.add_output_guideline(o)
+    
+    # Compile and output
+    compiled = builder.compile()
+    
+    if save:
+        with open(save, "w") as fp:
+            fp.write(compiled)
+        click.echo(f"Prompt saved to: {save}")
+    else:
+        click.echo(compiled)
+
+
+@prompt.command("interactive")
+def build_prompt_interactive():
+    """
+    Build a prompt interactively with guided questions.
+    
+    Example:
+    
+        strutex prompt interactive
+    """
+    from .prompts import StructuredPrompt
+    
+    click.echo("=== Strutex Prompt Builder ===\n")
+    
+    # Get persona
+    persona = click.prompt(
+        "Persona (press Enter for default)",
+        default="You are a highly accurate AI Data Extraction Assistant."
+    )
+    
+    builder = StructuredPrompt(persona=persona)
+    
+    # General rules
+    click.echo("\n--- General Rules ---")
+    click.echo("Enter general rules (empty line to finish):")
+    while True:
+        rule = click.prompt("Rule", default="", show_default=False)
+        if not rule:
+            break
+        builder.add_general_rule(rule)
+    
+    # Field rules
+    click.echo("\n--- Field Rules ---")
+    click.echo("Enter field rules (empty field name to finish):")
+    while True:
+        field_name = click.prompt("Field name", default="", show_default=False)
+        if not field_name:
+            break
+        field_rule = click.prompt(f"  Rule for '{field_name}'")
+        critical = click.confirm(f"  Mark as critical?", default=False)
+        builder.add_field_rule(field_name, field_rule, critical=critical)
+    
+    # Output guidelines
+    click.echo("\n--- Output Guidelines ---")
+    click.echo("Enter output guidelines (empty line to finish):")
+    while True:
+        guideline = click.prompt("Guideline", default="", show_default=False)
+        if not guideline:
+            break
+        builder.add_output_guideline(guideline)
+    
+    # Show result
+    click.echo("\n=== Generated Prompt ===\n")
+    compiled = builder.compile()
+    click.echo(compiled)
+    
+    # Offer to save
+    if click.confirm("\nSave to file?", default=False):
+        path = click.prompt("File path", type=str)
+        with open(path, "w") as fp:
+            fp.write(compiled)
+        click.echo(f"Saved to: {path}")
+
+
 def main():
     """Entry point for the CLI."""
     _check_click()
