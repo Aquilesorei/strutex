@@ -46,12 +46,11 @@
 
 ---
 
-## What's New in v0.8.1 🚀
+## What's New in v0.8.5 🚀
 
-- **Smart Caching**: Built-in Memory, SQLite, and Redis-ready caching to save costs on redundant extractions.
-- **Async & Batching**: High-performance `aprocess` and `process_batch` for high-volume workflows.
-- **Verification Loop**: Auto-correction agent that audits and fixes its own extractions.
-- **Expanded Providers**: First-class support for OpenAI, Anthropic, Ollama, Groq, and Langdock.
+- **Framework Integrations**: LangChain, LlamaIndex, Haystack, and Unstructured.io fallback
+- **DocumentInput**: Unified handling for file paths and BytesIO (HTTP uploads)
+- **Optional Extras**: Install only the integrations you need
 
 ---
 
@@ -70,6 +69,12 @@ pip install strutex[cli]
 
 # With OCR support
 pip install strutex[ocr]
+
+# Framework integrations
+pip install strutex[langchain]     # LangChain
+pip install strutex[llamaindex]    # LlamaIndex
+pip install strutex[haystack]      # Haystack
+pip install strutex[fallback]      # Unstructured.io
 
 # Everything
 pip install strutex[all]
