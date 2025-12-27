@@ -147,4 +147,4 @@ class DocumentInput:
     def __repr__(self) -> str:
         source_type = "path" if self.is_file_path else "bytes"
         return f"DocumentInput({source_type}, filename={self.filename!r})" # type: ignore
-```
+

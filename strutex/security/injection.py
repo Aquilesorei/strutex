@@ -69,24 +69,17 @@ class PromptInjectionDetector(SecurityPlugin):
         if additional_patterns:
             self.patterns.extend(additional_patterns)
             
-    def process(
-        self,
-        file_path: str,
-        prompt: str,
-        schema: Any,
-        mime_type: str,
-        context: Dict[str, Any]
-    ) -> SecurityResult:
-        """Check for prompt injection attempts."""
+    def _check_injection(self, text: str) -> List[str]:
+        """Check text against injection patterns."""
         issues = []
-        
-        # Check prompt content against patterns
         for pattern, description in self.patterns:
-            if re.search(pattern, prompt, re.IGNORECASE):
+            if re.search(pattern, text, re.IGNORECASE):
                 issues.append(f"Prompt injection detected: {description}")
-                
-        # If schema contains strings, check them too (basic check)
-        # Check context values too
+        return issues
+
+    def validate_input(self, text: str) -> SecurityResult:
+        """Validate input text."""
+        issues = self._check_injection(text)
         
         if issues:
             message = "; ".join(issues)
@@ -99,10 +92,22 @@ class PromptInjectionDetector(SecurityPlugin):
             
             return SecurityResult(
                 valid=False,
-                reason="; ".join(issues)
+                text=text,
+                reason=message
             )
             
-        return SecurityResult(valid=True)
+        return SecurityResult(valid=True, text=text)
+
+    def process(
+        self,
+        file_path: str,
+        prompt: str,
+        schema: Any,
+        mime_type: str,
+        context: Dict[str, Any]
+    ) -> SecurityResult:
+        """Check for prompt injection attempts (adapter for Processor)."""
+        return self.validate_input(prompt)
     
     def get_detections(self, text: str) -> List[dict]:
         """Get detailed detection information without blocking."""

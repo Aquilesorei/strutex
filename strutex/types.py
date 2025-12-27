@@ -50,6 +50,8 @@ class Schema:
                 self.items = items()  # type: ignore
             else:
                 self.items = items
+        else:
+            self.items = None
 
             
         self.required = required or []
