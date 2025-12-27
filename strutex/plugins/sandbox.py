@@ -36,8 +36,10 @@ def probe():
         # Find the entry point
         if hasattr(all_eps, 'select'):
             eps = list(all_eps.select(group="{group}"))
-        else:
+        elif hasattr(all_eps, 'get'):
             eps = list(all_eps.get("{group}", []))
+        else:
+            eps = [ep for ep in all_eps if ep.group == "{group}"]
         
         ep = None
         for e in eps:
@@ -183,8 +185,10 @@ def probe_all_plugins(
         
         if hasattr(all_eps, 'select'):
             eps = list(all_eps.select(group=group))
-        else:
+        elif hasattr(all_eps, 'get'):
             eps = list(all_eps.get(group, []))
+        else:
+            eps = [ep for ep in all_eps if ep.group == group]
         
         for ep in eps:
             results[ep.name] = probe_plugin_metadata(

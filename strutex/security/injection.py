@@ -3,7 +3,7 @@ Prompt injection detection security plugin.
 """
 
 import re
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Any, Dict
 
 from ..plugins.base import SecurityPlugin, SecurityResult
 
@@ -54,66 +54,65 @@ class PromptInjectionDetector(SecurityPlugin):
     
     def __init__(
         self,
-        strict: bool = False,
-        additional_patterns: List[Tuple[str, str]] = None,
-        block_on_detection: bool = True
+        block_on_detection: bool = True,
+        additional_patterns: Optional[List[Tuple[str, str]]] = None
     ):
         """
         Args:
-            strict: If True, use stricter matching
-            additional_patterns: Extra (pattern, category) tuples to check
-            block_on_detection: If True, reject input on detection. If False, just warn.
+            block_on_detection: Whether to raise SecurityError on detection.
+            additional_patterns: List of (pattern, description) tuples to add.
         """
-        self.strict = strict
-        self.patterns = list(self.DEFAULT_PATTERNS)
-        if additional_patterns:
-            self.patterns.extend(additional_patterns)
         self.block_on_detection = block_on_detection
         
-        # Compile patterns
-        flags = re.IGNORECASE
-        self._compiled = [(re.compile(p, flags), cat) for p, cat in self.patterns]
-    
-    def validate_input(self, text: str) -> SecurityResult:
-        """Check for prompt injection patterns."""
-        detections = []
+        # Combine default patterns with any additional ones
+        self.patterns: List[Tuple[str, str]] = self.DEFAULT_PATTERNS.copy()
+        if additional_patterns:
+            self.patterns.extend(additional_patterns)
+            
+    def process(
+        self,
+        file_path: str,
+        prompt: str,
+        schema: Any,
+        mime_type: str,
+        context: Dict[str, Any]
+    ) -> SecurityResult:
+        """Check for prompt injection attempts."""
+        issues = []
         
-        for pattern, category in self._compiled:
-            matches = pattern.findall(text)
-            if matches:
-                detections.append({
-                    "category": category,
-                    "pattern": pattern.pattern,
-                    "count": len(matches)
-                })
+        # Check prompt content against patterns
+        for pattern, description in self.patterns:
+            if re.search(pattern, prompt, re.IGNORECASE):
+                issues.append(f"Prompt injection detected: {description}")
+                
+        # If schema contains strings, check them too (basic check)
+        # Check context values too
         
-        if detections:
+        if issues:
+            message = "; ".join(issues)
             if self.block_on_detection:
-                categories = list(set(d["category"] for d in detections))
-                return SecurityResult(
-                    valid=False,
-                    text=None,
-                    reason=f"Potential prompt injection detected: {', '.join(categories)}"
+                from ..exceptions import SecurityError
+                raise SecurityError(
+                    f"Security violation: {message}",
+                    details={"issues": issues}
                 )
-            else:
-                # Allow but flag
-                return SecurityResult(
-                    valid=True,
-                    text=text,
-                    reason=f"Warning: potential injection patterns found"
-                )
-        
-        return SecurityResult(valid=True, text=text)
+            
+            return SecurityResult(
+                valid=False,
+                reason="; ".join(issues)
+            )
+            
+        return SecurityResult(valid=True)
     
     def get_detections(self, text: str) -> List[dict]:
         """Get detailed detection information without blocking."""
         detections = []
-        for pattern, category in self._compiled:
-            matches = pattern.findall(text)
+        for pattern, category in self.patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
             if matches:
                 detections.append({
                     "category": category,
-                    "pattern": pattern.pattern,
+                    "pattern": pattern,
                     "matches": matches[:5]  # Limit for safety
                 })
         return detections

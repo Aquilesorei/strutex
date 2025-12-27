@@ -7,13 +7,13 @@ from typing import List, Optional, Any, Dict, Union
 from pathlib import Path
 
 try:
-    from llama_index.core.readers.base import BaseReader
-    from llama_index.core.schema import Document
+    from llama_index.core.readers.base import BaseReader  # type: ignore
+    from llama_index.core.schema import Document  # type: ignore
 except ImportError:
     try:
         # Fallback for older LlamaIndex versions
-        from llama_index.readers.base import BaseReader
-        from llama_index.schema import Document
+        from llama_index.readers.base import BaseReader  # type: ignore
+        from llama_index.schema import Document  # type: ignore
     except ImportError:
         raise ImportError(
             "Could not import llama_index. "
@@ -84,7 +84,8 @@ class StrutexReader(BaseReader):
         # 1. Run the extraction using Strutex Core
         result = self.processor.process(
             file_path=path,
-            schema=self.schema
+            schema=self.schema,
+            prompt=""
         )
 
         # 2. Convert the Pydantic model (or dict) to a JSON string

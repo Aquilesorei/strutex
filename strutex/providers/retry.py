@@ -7,7 +7,7 @@ Provides retry logic with exponential backoff for handling transient failures.
 import time
 import logging
 from functools import wraps
-from typing import Callable, Optional, Tuple, Type, TypeVar
+from typing import Callable, Optional, Tuple, Type, TypeVar, Awaitable
 
 T = TypeVar("T")
 
@@ -100,14 +100,18 @@ def with_retry(
                             f"Last error: {e}"
                         )
             
-            raise last_exception
+            if last_exception:
+                raise last_exception
+            raise RuntimeError("Unexpected retry loop exit")
         
         return wrapper
     return decorator
 
 
+
+
 async def with_retry_async(
-    func: Callable[..., T],
+    func: Callable[..., Awaitable[T]],
     config: Optional[RetryConfig] = None,
     on_retry: Optional[Callable[[Exception, int], None]] = None,
     *args,
@@ -128,7 +132,7 @@ async def with_retry_async(
     import asyncio
     
     cfg = config or DEFAULT_RETRY_CONFIG
-    last_exception = None
+    last_exception: Optional[Exception] = None
     
     for attempt in range(cfg.max_retries + 1):
         try:
@@ -157,7 +161,9 @@ async def with_retry_async(
                     f"Last error: {e}"
                 )
     
-    raise last_exception
+    if last_exception:
+        raise last_exception
+    raise RuntimeError("Unexpected retry loop exit")
 
 
 class RateLimiter:

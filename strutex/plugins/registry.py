@@ -19,7 +19,7 @@ Example:
 
 import sys
 import warnings
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union, Set
 from abc import ABC
 
 from .protocol import PLUGIN_API_VERSION, check_plugin_version
@@ -191,7 +191,7 @@ class PluginRegistry:
         result = {}
         
         # Get all names from entry points and manual registrations
-        all_names = set()
+        all_names: Set[str] = set()
         all_names.update(cls._entry_points.get(plugin_type, {}).keys())
         all_names.update(cls._manual.get(plugin_type, {}).keys())
         all_names.update(cls._loaded.get(plugin_type, {}).keys())
@@ -240,7 +240,7 @@ class PluginRegistry:
         if not cls._discovered:
             cls.discover()
         
-        names = set()
+        names: Set[str] = set()
         names.update(cls._entry_points.get(plugin_type, {}).keys())
         names.update(cls._manual.get(plugin_type, {}).keys())
         names.update(cls._loaded.get(plugin_type, {}).keys())
@@ -253,7 +253,7 @@ class PluginRegistry:
         if not cls._discovered:
             cls.discover()
         
-        types = set()
+        types: Set[str] = set()
         types.update(cls._entry_points.keys())
         types.update(cls._manual.keys())
         types.update(cls._loaded.keys())
@@ -371,45 +371,46 @@ class PluginRegistry:
                 cls._discovered = True
                 return 0
         
-        # Get all entry point groups
+        # Get all entry points
         try:
             all_eps = entry_points()
             
-            # Get group names that match our prefix
-            if hasattr(all_eps, 'groups'):
-                # Python 3.12+ style
-                groups = [g for g in all_eps.groups if g.startswith(f"{group_prefix}.")]
-            elif hasattr(all_eps, 'keys'):
-                # Python 3.9-3.11 style (dict-like)
-                groups = [g for g in all_eps.keys() if g.startswith(f"{group_prefix}.")]
+            # Strategy: collect all matching EntryPoint objects first
+            matching_eps: List["EntryPoint"] = []
+            
+            # Check for dict-like interface (Python < 3.10 stdlib or SelectableGroups in 3.10/3.11)
+            if hasattr(all_eps, 'items'):
+                for group, eps in all_eps.items():
+                    if group.startswith(f"{group_prefix}."):
+                        # eps can be a single EntryPoint or list, depending on impl
+                        # Standard is list
+                        if isinstance(eps, list):
+                            matching_eps.extend(eps)
+                        else:
+                            # Some implementations might return single object? Unlikely but safe.
+                            try:
+                                matching_eps.extend(eps)
+                            except TypeError:
+                                matching_eps.append(eps)
             else:
-                groups = []
-        except Exception:
-            cls._discovered = True
-            return 0
-        
-        for group in groups:
-            # Extract plugin type from group name
-            # e.g., "strutex.providers" -> "provider"
-            plugin_type = group.replace(f"{group_prefix}.", "").rstrip("s")
+                # Sequence-like interface (Python 3.12+ EntryPoints, or importlib_metadata)
+                for ep in all_eps:
+                    if ep.group.startswith(f"{group_prefix}."):
+                        matching_eps.append(ep)
             
-            if plugin_type not in cls._entry_points:
-                cls._entry_points[plugin_type] = {}
-            
-            try:
-                # Get entry points for this group
-                if hasattr(all_eps, 'select'):
-                    eps = all_eps.select(group=group)
-                else:
-                    eps = all_eps.get(group, [])
+            # Now register them
+            for ep in matching_eps:
+                # Extract plugin type from group name (e.g. "strutex.providers" -> "provider")
+                plugin_type = ep.group.replace(f"{group_prefix}.", "").rstrip("s")
                 
-                for ep in eps:
-                    # Store entry point for lazy loading
-                    cls._entry_points[plugin_type][ep.name.lower()] = ep
-                    discovered += 1
-                    
-            except Exception:
-                pass
+                if plugin_type not in cls._entry_points:
+                    cls._entry_points[plugin_type] = {}
+                
+                cls._entry_points[plugin_type][ep.name.lower()] = ep
+                discovered += 1
+                
+        except Exception:
+            pass
         
         cls._discovered = True
         return discovered

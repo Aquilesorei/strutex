@@ -36,7 +36,7 @@ except ImportError:
         HookimplMarker = _StubMarker
         PluginManager = None
     
-    pluggy = _StubPluggy()
+    pluggy = _StubPluggy()  # type: ignore
 
 # Hook markers for strutex
 hookspec = pluggy.HookspecMarker("strutex")
@@ -67,7 +67,7 @@ class StrutexHookSpec:
             def strutex_register_providers(self):
                 return [MyProvider, AnotherProvider]
         """
-        pass
+        return []
     
     @hookspec
     def register_validators(self) -> List[type]:
@@ -77,7 +77,7 @@ class StrutexHookSpec:
         Returns:
             List of Validator subclasses
         """
-        pass
+        return []
     
     @hookspec
     def register_postprocessors(self) -> List[type]:
@@ -87,7 +87,7 @@ class StrutexHookSpec:
         Returns:
             List of Postprocessor subclasses
         """
-        pass
+        return []
     
     @hookspec
     def register_security(self) -> List[type]:
@@ -97,7 +97,7 @@ class StrutexHookSpec:
         Returns:
             List of SecurityPlugin subclasses
         """
-        pass
+        return []
     
     @hookspec
     def register_extractors(self) -> List[type]:
@@ -107,7 +107,7 @@ class StrutexHookSpec:
         Returns:
             List of Extractor subclasses
         """
-        pass
+        return []
     
     @hookspec(firstresult=False)
     def pre_process(
@@ -140,7 +140,7 @@ class StrutexHookSpec:
                 context["start_time"] = time.time()
                 return {"prompt": prompt + "\\nAdditional instruction."}
         """
-        pass
+        return None
     
     @hookspec(firstresult=False)
     def post_process(
@@ -168,7 +168,7 @@ class StrutexHookSpec:
                 result["_processing_time"] = elapsed
                 return result
         """
-        pass
+        return None
     
     @hookspec(firstresult=True)
     def on_error(
@@ -197,7 +197,7 @@ class StrutexHookSpec:
                     return self._cached_result(file_path)
                 return None
         """
-        pass
+        return None
 
 
 # Global plugin manager instance

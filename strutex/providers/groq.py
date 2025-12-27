@@ -82,7 +82,7 @@ class GroqProvider(Provider, name="groq"):
             if not self.api_key:
                 raise ValueError("Missing API Key for Groq. Set GROQ_API_KEY env var.")
             try:
-                from groq import Groq
+                from groq import Groq  # type: ignore
                 self._client = Groq(
                     api_key=self.api_key,
                     timeout=self.timeout
@@ -97,7 +97,7 @@ class GroqProvider(Provider, name="groq"):
     def _is_vision_model(self) -> bool:
         """Check if current model supports vision."""
         model_info = self.MODELS.get(self.model, {})
-        return model_info.get("vision", False)
+        return bool(model_info.get("vision", False))
     
     def process(
         self,
@@ -272,7 +272,7 @@ class GroqProvider(Provider, name="groq"):
     def health_check(cls) -> bool:
         """Check if the Groq provider is available."""
         try:
-            from groq import Groq
+            from groq import Groq  # type: ignore
             return bool(os.getenv("GROQ_API_KEY"))
         except ImportError:
             return False

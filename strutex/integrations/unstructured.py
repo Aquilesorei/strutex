@@ -11,7 +11,7 @@ import logging
 from typing import Any, Dict, Optional, Union
 
 try:
-    from unstructured.partition.auto import partition
+    from unstructured.partition.auto import partition  # type: ignore
 except ImportError:
     partition = None
 

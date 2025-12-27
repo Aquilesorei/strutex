@@ -109,8 +109,10 @@ class PluginDiscovery:
             try:
                 if hasattr(all_eps, 'select'):
                     eps = all_eps.select(group=group)
-                else:
+                elif hasattr(all_eps, 'get'):
                     eps = all_eps.get(group, [])
+                else:
+                    eps = [ep for ep in all_eps if ep.group == group]
                 
                 for ep in eps:
                     result[plugin_type].append({

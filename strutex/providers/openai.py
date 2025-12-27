@@ -7,7 +7,7 @@ Supports GPT-4o, GPT-4 Vision, and other OpenAI models.
 import os
 import json
 import base64
-from typing import Any, Optional
+from typing import Any, Optional, Union, List, Dict
 
 from .base import Provider
 from .retry import RetryConfig, with_retry
@@ -184,6 +184,7 @@ class OpenAIProvider(Provider, name="openai"):
         }
         
         # Build user message with file content
+        user_content: Union[str, List[Dict[str, Any]]]
         if self._is_image(mime_type):
             # Vision API - send as image
             with open(file_path, "rb") as f:

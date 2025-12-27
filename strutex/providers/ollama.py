@@ -8,7 +8,7 @@ Respects OLLAMA_HOST environment variable for custom endpoints.
 import os
 import json
 import base64
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Dict
 
 from .base import Provider
 from .retry import RetryConfig, with_retry
@@ -70,7 +70,8 @@ class OllamaProvider(Provider, name="ollama"):
             retry_config: Custom retry configuration
         """
         self.host = host or os.getenv("OLLAMA_HOST", "http://localhost:11434")
-        self.host = self.host.rstrip("/")
+        raw_host = host or os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        self.host = (raw_host or "").rstrip("/")
         self.model = model
         self.timeout = timeout
         self.retry_config = retry_config or self.DEFAULT_RETRY
@@ -144,7 +145,8 @@ Respond ONLY with the JSON object, no additional text or markdown."""
         full_prompt = self._build_prompt_with_schema(prompt, schema)
         
         # Prepare the request
-        messages = [{
+        # Prepare the request
+        messages: List[Dict[str, Any]] = [{
             "role": "user",
             "content": full_prompt
         }]

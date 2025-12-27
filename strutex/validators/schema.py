@@ -46,7 +46,7 @@ class SchemaValidator(Validator, name="schema"):
         if schema is None:
             return ValidationResult(valid=True, data=data)
         
-        issues = []
+        issues: List[str] = []
         self._validate_value(data, schema, "", issues)
         
         return ValidationResult(

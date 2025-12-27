@@ -10,8 +10,8 @@ from strutex import Schema
 # Attempt to import LangChain core components.
 # This makes LangChain an optional dependency.
 try:
-    from langchain_core.document_loaders import BaseLoader
-    from langchain_core.documents import Document
+    from langchain_core.document_loaders import BaseLoader  # type: ignore
+    from langchain_core.documents import Document  # type: ignore
 except ImportError:
     # Fallback for older LangChain versions or missing installation
     raise ImportError(

@@ -7,7 +7,7 @@ import io
 import os
 import tempfile
 from pathlib import Path
-from typing import Union, Optional, BinaryIO
+from typing import Union, Optional, BinaryIO, cast
 from contextlib import contextmanager
 
 
@@ -48,6 +48,7 @@ class DocumentInput:
         self.filename = filename
         self.mime_type = mime_type
         self._temp_file: Optional[str] = None
+        self.path: Optional[str] = None
         
         # Determine if source is a file path or file-like object
         self.is_file_path = isinstance(source, (str, Path))
@@ -106,13 +107,13 @@ class DocumentInput:
         Returns:
             bytes: Document content.
         """
-        if self.is_file_path:
+        if self.is_file_path and self.path:
             with open(self.path, 'rb') as f:
                 return f.read()
         else:
             if hasattr(self.source, 'seek'):
                 self.source.seek(0)
-            return self.source.read()
+            return cast(BinaryIO, self.source).read()
     
     def get_mime_type(self) -> Optional[str]:
         """
@@ -145,4 +146,5 @@ class DocumentInput:
     
     def __repr__(self) -> str:
         source_type = "path" if self.is_file_path else "bytes"
-        return f"DocumentInput({source_type}, filename={self.filename!r})"
+        return f"DocumentInput({source_type}, filename={self.filename!r})" # type: ignore
+```

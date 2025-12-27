@@ -38,29 +38,78 @@ class Schema:
             self.properties = {}
             for k, v in properties.items():
                 if isinstance(v, builtins.type) and issubclass(v, Schema):
-                    self.properties[k] = v()  # Auto-instantiate
+                    self.properties[k] = v()  # type: ignore
                 else:
                     self.properties[k] = v
         else:
-            self.properties = None
+            self.properties = None  # type: ignore
 
         # Handle items (single schema for array)
         if items:
             if isinstance(items, builtins.type) and issubclass(items, Schema):
-                self.items = items()  # Auto-instantiate
+                self.items = items()  # type: ignore
             else:
                 self.items = items
-        else:
-            self.items = None
+
             
         self.required = required or []
         self.nullable = nullable
         self.enum = enum
         self.format = format
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Schema':
+        """Reconstruct a Schema object from a dictionary."""
+        # Detect type
+        type_str = data.get("type")
+        if not type_str:
+            # Fallback based on content
+            if "properties" in data:
+                type_str = "object"
+            elif "items" in data:
+                type_str = "array"
+            else:
+                type_str = "string"
+        
+        # Handle list of types (e.g. ["string", "null"]) for nullable
+        nullable = False
+        if isinstance(type_str, list):
+            if "null" in type_str:
+                nullable = True
+                type_str = next((t for t in type_str if t != "null"), "string")
+            else:
+                type_str = type_str[0]
+        else:
+            type_str = type_str.lower()
+            
+        description = data.get("description")
+        
+        if type_str == "string":
+            return String(description=description, nullable=nullable, format=data.get("format"))
+        elif type_str == "number":
+            return Number(description=description, nullable=nullable)
+        elif type_str == "integer":
+            return Integer(description=description, nullable=nullable)
+        elif type_str == "boolean":
+            return Boolean(description=description, nullable=nullable)
+        elif type_str == "array":
+            items_data = data.get("items", {})
+            # Handle item definition
+            items = cls.from_dict(items_data) if items_data else String()
+            return Array(items=items, description=description, nullable=nullable)
+        elif type_str == "object":
+            properties: Dict[str, Any] = {}
+            for k, v in data.get("properties", {}).items():
+                properties[k] = cls.from_dict(v)
+            required = data.get("required")
+            return Object(properties=properties, description=description, required=required, nullable=nullable)  # type: ignore
+            
+        # Default fallback
+        return String(description=description, nullable=nullable)
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert schema to JSON Schema dictionary."""
-        schema = {
+        schema: Dict[str, Any] = {
             "type": self.type.value.lower(),
         }
         

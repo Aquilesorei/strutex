@@ -66,18 +66,18 @@ def pydantic_to_schema(model: Type) -> Schema:
     )
 
 
+# ... imports ...
+from typing import Any, Dict, Type, Union, get_type_hints, get_origin, get_args, Optional, cast
+# ...
+
 def _python_type_to_schema(
     python_type: Any,
-    description: str = None,
+    description: Optional[str] = None,
     nullable: bool = False
 ) -> Schema:
     """Convert a Python type annotation to a strutex Schema."""
-    try:
-        from pydantic import BaseModel
-    except ImportError:
-        BaseModel = None
     
-    # Handle None type
+    # Handle optional/None type first
     if python_type is type(None):
         return String(nullable=True)
     
@@ -95,7 +95,6 @@ def _python_type_to_schema(
     origin = get_origin(python_type)
     args = get_args(python_type)
     
-    # Handle Optional[X] (Union[X, None])
     if origin is Union:
         non_none_args = [a for a in args if a is not type(None)]
         if len(non_none_args) == 1:
@@ -117,12 +116,19 @@ def _python_type_to_schema(
         return Object(
             properties={},
             description=description,
-            required=[],
+            required=[], # type: ignore
             nullable=nullable
         )
     
-    # Handle nested Pydantic models
-    if BaseModel and inspect.isclass(python_type) and issubclass(python_type, BaseModel):
+    # Check for Pydantic BaseModel subclass
+    # Use robust check without failing if Pydantic missing
+    try:
+        from pydantic import BaseModel
+        is_model = inspect.isclass(python_type) and issubclass(python_type, BaseModel)
+    except ImportError:
+        is_model = False
+        
+    if is_model:
         nested = pydantic_to_schema(python_type)
         # Copy nullable setting
         nested.nullable = nullable
@@ -132,6 +138,7 @@ def _python_type_to_schema(
     
     # Default to string
     return String(description=description, nullable=nullable)
+
 
 
 def validate_with_pydantic(data: Dict[str, Any], model: Type) -> Any:

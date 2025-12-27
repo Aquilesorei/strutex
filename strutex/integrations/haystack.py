@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Optional, Any, Dict, Union
 
 try:
-    from haystack import component, Document
+    from haystack import component, Document  # type: ignore
 except ImportError:
     raise ImportError(
         "Could not import haystack. "
@@ -73,7 +73,8 @@ class StrutexConverter:
             try:
                 result = self.processor.process(
                     file_path=file_path,
-                    schema=self.schema
+                    schema=self.schema,
+                    prompt=""
                 )
 
                 # 2. Serialize to JSON

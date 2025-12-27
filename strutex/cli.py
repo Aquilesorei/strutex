@@ -90,7 +90,7 @@ def run_extraction(
     import os
     
     try:
-        import yaml
+        import yaml  # type: ignore
     except ImportError:
         click.echo("Error: PyYAML is required for config files.", err=True)
         click.echo("Install with: pip install pyyaml", err=True)

@@ -1,6 +1,6 @@
 import logging
 from typing import Dict
-import pandas as pd
+import pandas as pd  # type: ignore
 
 logger = logging.getLogger(__name__)
 

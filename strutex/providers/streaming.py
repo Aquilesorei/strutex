@@ -6,7 +6,7 @@ Provides async generators for real-time streaming of extraction results.
 
 import json
 import logging
-from typing import Any, AsyncIterator, Dict, Iterator, Optional
+from typing import Any, AsyncIterator, Dict, Iterator, Optional, Callable
 from dataclasses import dataclass
 
 from ..types import Schema
@@ -55,7 +55,7 @@ class StreamingMixin:
             StreamChunk with partial/complete content
         """
         # Default: call non-streaming and yield single result
-        result = self.process(file_path, prompt, schema, mime_type, **kwargs)
+        result = self.process(file_path, prompt, schema, mime_type, **kwargs)  # type: ignore
         content = json.dumps(result) if isinstance(result, dict) else str(result)
         
         yield StreamChunk(
@@ -80,7 +80,7 @@ class StreamingMixin:
         Yields:
             StreamChunk with partial/complete content
         """
-        result = await self.aprocess(file_path, prompt, schema, mime_type, **kwargs)
+        result = await self.aprocess(file_path, prompt, schema, mime_type, **kwargs)  # type: ignore
         content = json.dumps(result) if isinstance(result, dict) else str(result)
         
         yield StreamChunk(
@@ -237,8 +237,8 @@ async def astream_to_string(stream: AsyncIterator[StreamChunk]) -> str:
 
 def stream_with_callback(
     stream: Iterator[StreamChunk],
-    on_chunk: callable,
-    on_complete: Optional[callable] = None
+    on_chunk: Callable[[StreamChunk], Any],
+    on_complete: Optional[Callable[[str], Any]] = None
 ) -> str:
     """
     Stream with callbacks for each chunk.

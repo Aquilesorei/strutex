@@ -103,9 +103,9 @@ class _CallbackHookPlugin:
 try:
     from .plugins.hooks import hookimpl, PLUGGY_AVAILABLE
     if PLUGGY_AVAILABLE:
-        _CallbackHookPlugin.pre_process = hookimpl(_CallbackHookPlugin.pre_process)
-        _CallbackHookPlugin.post_process = hookimpl(_CallbackHookPlugin.post_process)
-        _CallbackHookPlugin.on_error = hookimpl(_CallbackHookPlugin.on_error)
+        _CallbackHookPlugin.pre_process = hookimpl(_CallbackHookPlugin.pre_process)  # type: ignore
+        _CallbackHookPlugin.post_process = hookimpl(_CallbackHookPlugin.post_process)  # type: ignore
+        _CallbackHookPlugin.on_error = hookimpl(_CallbackHookPlugin.on_error)  # type: ignore
 except ImportError:
     pass
 
